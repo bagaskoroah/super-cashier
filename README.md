@@ -1,7 +1,7 @@
 # PacMart: Self Service Cashier
 
 Self-Service Cashier adalah program kasir sederhana berbasis Python yang memungkinkan pelanggan mencatat, mengubah, dan menghitung transaksi belanja mereka secara mandiri. 
-Program ini cocok untuk simulasi sistem kasir mandiri (self-checkout) dengan fitur yang interaktif dan dinamis.
+Program ini cocok untuk simulasi sistem kasir mandiri (self-checkout) dengan fitur yang interaktif dan dinamis dengan menerapkan algoritma struktur data dan paradigma pemrograman objek atau OOP.
 
 ## Problem Background
 
@@ -18,8 +18,136 @@ Menyediakan sistem kasir mandiri yang modular dan interaktif untuk manajemen tra
 3. Penghapusan informasi item
 4. Perhitungan total harga transaksi
 
+## How to Execute the Program?
+
+1. Pastikan Python telah terinstal di perangkat kamu (disarankan Python 3.++).
+2. Pastikan semua dependensi telah diinstal, termasuk tabulate. Jika belum, jalankan perintah berikut di terminal:
+
+```python
+pip install tabulate
+```
+3. Buka terminal atau command prompt, lalu navigasikan ke direktori folder tempat file main.py dan script.py disimpan.
+4. Jalankan program dengan mengetik _command_ di bawah ini pada terminal:
+
+```python
+python main.py
+```
+5. Ikuti instruksi di layar untuk mulai menggunakan sistem kasir self-service.
+
 ## Code Flow Explanation
 
+1. File main.py berfungsi sebagai entry point dari program. Di dalamnya terdapat fungsi main() yang menjalankan _interface_ berbasis terminal (menu) untuk pengguna. Melalui menu ini, pengguna dapat memilih berbagai aktivitas manajemen transaksi seperti menambah, mengubah, menghapus, mengecek, dan menghitung transaksi.
+
+2. Fungsi main() akan terus berjalan dalam loop hingga pengguna memilih keluar dari program. Setiap pilihan yang dipilih pengguna akan memanggil metode yang sesuai dari objek Transaction yang telah dibuat.
+
+3. File script.py berisi program dengan class Transaction, yang menjadi modul untuk dijalankan pada main.py sebagai program utama.
+
+4. Di dalam class Transaction, terdapat berbagai metode sebagai alat bantu dalam fungsionalitas transaksi, seperti:
+
+  - add_item() => memiliki fungsi untuk menambahkan item baru ke transaksi
+  ```python
+  def add_item(self):
+    """Menambahkan item ke dalam daftar transaksi."""
+    self.item_name = input('Nama item: ')
+    self.item_qty = input('Jumlah: ')
+    self.item_price = input('Harga: ')
+    self.items[self.item_name.strip().title()] = [int(self.item_qty), int(self.item_price)]
+  ```
+  
+  - update_item_name(), update_item_qty(), update_item_price() => mengubah detail informasi item, meliputi nama, jumlah, dan harga item.
+  ```python
+  def update_item_name(self):
+    """Mengubah informasi nama item pada daftar transaksi."""
+    updated_name_items = dict()
+    name_target = input('Masukkan nama item yang ingin diubah namanya: ')
+
+    for key, value in self.items.items():
+      if name_target.title() == key:
+        new_name = input('Masukkan nama item yang baru: ')
+        updated_name_items[new_name.title()] = value # Mengganti nama key dengan nama yang baru
+        print('Nama item berhasil diubah!')
+      else:
+        print('Nama item tidak ditemukan!')
+        updated_name_items[key] = value
+
+    self.items = updated_name_items
+
+  def update_item_qty(self):
+    """Mengubah jumlah item pada daftar transaksi."""
+    name_target = input('Item yang ingin diubah: ')
+    new_qty = int(input('Jumlah baru: '))
+    self.items[name_target][0] = new_qty
+
+  def update_item_price(self):
+    """Mengubah nominal harga item pada daftar transaksi."""
+    name_target = input('Item yang ingin diubah: ')
+    new_price = int(input('Harga baru: '))
+    self.items[name_target][1] = new_price
+  ```
+  - delete_item() => menghapus item tertentu berdasarkan nama item yang di-_input_ oleh pengguna
+  ```python
+  def delete_item(self):
+    """Menghapus item tertentu dari daftar transaksi berdasarkan nama item."""
+    item_to_delete = input('Masukkan nama item yang ingin dihapus dari daftar transaksi: ').strip()
+    if item_to_delete in self.items:
+      self.items.pop(item_to_delete) # Menghapus item tertentu dari dictionary
+    else:
+      print('Item tidak ditemukan dalam daftar transaksi!')
+  ```
+
+  - reset_transaction() => menghapus seuruh item pada self.items
+  ```python
+  def reset_transaction(self):
+    self.items.clear()
+  ```
+  - check_order() => menampilkan transaksi dalam bentuk tabel menggunakan modul tabulate
+
+  ```python
+  def check_order(self):
+    """Menampilkan daftar transaksi serta total harga dalam bentuk tabulasi"""
+
+    order_list = [(key, value[0], value[1], value[0] * value[1]) for key, value in self.items.items()]
+    if len(self.items) > 0 and '' not in self.items: 
+      headers = ['Nama Item', 'Jumlah Item', 'Harga/Item', 'Total Harga']
+      print(f'\nFormat item anda sudah benar! Berikut rincian transaksi anda: \n{tabulate(order_list, headers=headers)}')
+    elif len(self.items) == 0:
+      print('\nTidak ada item yang dapat ditemukan pada daftar transaksi, silakan tambahkan item terlebih dahulu!')
+    else:
+      headers = ['Nama Item', 'Jumlah Item', 'Harga/Item', 'Total Harga']
+      print('\nTerdapat kesalahan input data item!\n')
+      print(tabulate(order_list, headers=headers)) 
+      print('\nMohon perbaiki kembali format item tidak boleh ada yang kosong! Silakan lengkapi format item terlebih dahulu.')
+  ```
+
+  - total_price() => menghitung total harga dengan mengimplementasikan skenario diskon berdasarkan nominal belanja pengguna
+  ```python
+  def total_price(self):
+    """Menampilkan total harga transaksi serta potongannya apabila memenuhi syarat diskon berdasarkan total harga."""
+    total_transaction = 0
+
+    for key, value in self.items.items():
+      total_transaction += value[0] * value[1] # Menghitung total harga berdasarkan jumlah item * harga/item
+
+if '' in self.items:
+      order_list = [(key, value[0], value[1], value[0] * value[1]) for key, value in self.items.items()]
+      headers = ['Nama Item', 'Jumlah Item', 'Harga/Item', 'Total Harga']
+      ...
+
+    elif total_transaction <= 200000:
+      ...
+
+    elif 200000 < total_transaction <= 300000:
+      disc = 0.05
+      ...
+
+    elif 300000 < total_transaction <= 500000:
+      disc = 0.08
+      ...
+
+    elif total_transaction > 500000:
+      disc = 0.10
+      ...
+  ```
 
 ## Test Case Result
 
@@ -87,5 +215,5 @@ bisnis supermarket yang dimiliki oleh Andi. Adapun pengembangan yang dapat dilak
 ## Contact
 
 Created by Bagaskoro Adi Hutomo
-📧 Email: bagaskoroah@gmail.com
+Email: bagaskoroah@gmail.com
 Feel free for any further discussion! :)
